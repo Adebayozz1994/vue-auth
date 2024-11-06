@@ -7,6 +7,7 @@ import ResetPassword from "@/components/ResetPassword.vue";
 import PasswordUpdate from "@/components/PasswordUpdate.vue";
 import RegisterPage from "@/components/RegisterPage.vue";
 import AdminRegister from "@/components/AdminRegister.vue";
+import AdminLogin from "@/components/AdminLogin.vue";
 
 
 
@@ -23,6 +24,8 @@ const routes = [
 
 
     {path: "/admin/register", component: AdminRegister},
+    {path: "/admin/login", component: AdminLogin},
+
 
 
 
