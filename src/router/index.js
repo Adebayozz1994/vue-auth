@@ -6,6 +6,7 @@ import PasswordLink from "@/components/PasswordLink.vue";
 import ResetPassword from "@/components/ResetPassword.vue";
 import PasswordUpdate from "@/components/PasswordUpdate.vue";
 import RegisterPage from "@/components/RegisterPage.vue";
+import AdminRegister from "@/components/AdminRegister.vue";
 
 
 
@@ -17,6 +18,12 @@ const routes = [
     {path: "/reset-password/:token", component: ResetPassword},
     {path: "/passwordupdate", component: PasswordUpdate},
     {path: "/signup", component: RegisterPage},
+
+
+
+
+    {path: "/admin/register", component: AdminRegister},
+
 
 
 
