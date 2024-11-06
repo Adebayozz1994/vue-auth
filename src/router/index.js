@@ -5,6 +5,7 @@ import DashBoard from "@/components/DashBoard.vue";
 import PasswordLink from "@/components/PasswordLink.vue";
 import ResetPassword from "@/components/ResetPassword.vue";
 import PasswordUpdate from "@/components/PasswordUpdate.vue";
+import RegisterPage from "@/components/RegisterPage.vue";
 
 
 
@@ -15,6 +16,8 @@ const routes = [
     {path: "/passwordlink", component: PasswordLink},
     {path: "/reset-password/:token", component: ResetPassword},
     {path: "/passwordupdate", component: PasswordUpdate},
+    {path: "/signup", component: RegisterPage},
+
 
 
 ]
