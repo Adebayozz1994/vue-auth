@@ -35,7 +35,7 @@
   
   const resetPassword = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/api/reset-password', {
+      const response = await axios.post('http://localhost:8000/api/admin/reset-password', {
         email: email.value,
         password: password.value,
         password_confirmation: password_confirmation.value,
