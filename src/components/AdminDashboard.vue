@@ -8,8 +8,9 @@
         <p><strong>Email:</strong> {{ user.email }}</p>
       </div>
   
-      <!-- Update Password Button -->
-      <button @click="showUpdatePasswordForm = !showUpdatePasswordForm" 
+      <!-- Update Password Button: Only visible if the form is not shown -->
+      <button v-if="!showUpdatePasswordForm" 
+              @click="showUpdatePasswordForm = true"
               class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">
         Update Password
       </button>
@@ -17,10 +18,10 @@
       <!-- Display Update Password Form if the user clicked the button -->
       <div v-if="showUpdatePasswordForm">
         <h2>Update Your Password</h2>
-        <form @submit.prevent="updatePassword">
+        <form @submit.prevent="updatePasswordByEmail">
           <div>
-            <label>Current Password</label>
-            <input type="password" v-model="current_password" required />
+            <label>Email Address</label>
+            <input type="email" v-model="email" required />
           </div>
           <div>
             <label>New Password</label>
@@ -32,9 +33,13 @@
           </div>
           <button type="submit">Update Password</button>
         </form>
-        <div v-if="message" class="message">{{ message }}</div>
-        <div v-if="error" class="error">{{ error }}</div>
       </div>
+  
+      <!-- Success Message -->
+      <div v-if="message" class="message">{{ message }}</div>
+  
+      <!-- Error Message -->
+      <div v-if="error" class="error">{{ error }}</div>
   
       <!-- Logout Button -->
       <button @click="logout" class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600">
@@ -47,16 +52,15 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import axios from 'axios';
-// import { url } from '@/data';
   
   const user = ref({ name: '', email: '' });
   const router = useRouter();
   
   // States for password update form
-  const current_password = ref('');
+  const email = ref('');
   const password = ref('');
   const password_confirmation = ref('');
   const message = ref('');
@@ -103,35 +107,41 @@
   };
   
   // Update password function
-  const updatePassword = async () => {
+  const updatePasswordByEmail = async () => {
+    const token = localStorage.getItem('token'); // Ensure the token is available
+  
+    if (!token) {
+      error.value = "No token found, please log in again.";
+      return;
+    }
+  
     try {
-      const token = localStorage.getItem('token'); // Retrieve token from localStorage
+      // Make sure token is passed in the request
       const response = await axios.put('http://localhost:8000/api/admin/password', {
-        current_password: current_password.value,
+        email: email.value,
         password: password.value,
         password_confirmation: password_confirmation.value,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Send the token with the request
-        },
+        token: token, // Include the token for authentication
       });
-      console.log(response);
-      
   
-      message.value = 'Password updated successfully!';
+      // Handle response success
+      message.value = response.data.message;
       error.value = '';
+  
       // Clear form fields
-      current_password.value = '';
+      email.value = '';
       password.value = '';
       password_confirmation.value = '';
+      showUpdatePasswordForm.value = false; // Hide the form after submission
     } catch (errorResponse) {
-      // Handle errors more precisely by field names
+      // Handle error responses from the backend
       if (errorResponse.response && errorResponse.response.data.errors) {
         const errors = errorResponse.response.data.errors;
-        error.value = errors.current_password?.[0] || errors.password?.[0] || errors.password_confirmation?.[0] || 'An error occurred';
+        error.value = errors.email?.[0] || errors.password?.[0] || 'An error occurred';
       } else {
         error.value = 'An error occurred';
       }
+  
       message.value = '';
     }
   };
