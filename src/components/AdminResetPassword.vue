@@ -34,13 +34,21 @@
   });
   
   const resetPassword = async () => {
+    console.log('Sending data:', {
+    email: email.value,
+    password: password.value,
+    password_confirmation: password_confirmation.value,
+    token: token.value
+  });
     try {
       const response = await axios.post('http://localhost:8000/api/admin/reset-password', {
         email: email.value,
         password: password.value,
         password_confirmation: password_confirmation.value,
         token: token.value,
+        
       });
+      
       message.value = response.data.status; // Assuming the response returns a status message
       error.value = '';
     } catch (errorResponse) {
