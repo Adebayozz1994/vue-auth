@@ -6,6 +6,9 @@
       <div class="user-info">
         <p><strong>Name:</strong> {{ user.name }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
+        <div v-if="user && user.profile_picture_url">
+        <img :src="user.profile_picture_url" alt="Profile Picture" width="150" height="150" />
+      </div>
       </div>
       
   
@@ -15,6 +18,21 @@
               class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600">
         Update Password
       </button>
+
+
+       <!-- Profile Picture Upload Section -->
+       <div>
+        <h2>Upload Profile Picture</h2>
+        <form @submit.prevent="uploadProfilePicture">
+          <div>
+            <input type="file" @change="handleFileChange" accept="image/*" />
+          </div>
+          <button type="submit" :disabled="!profilePicture">Upload Picture</button>
+        </form>
+        <div v-if="uploadMessage" class="message">{{ uploadMessage }}</div>
+        <div v-if="uploadError" class="error">{{ uploadError }}</div>
+      </div>
+      <!-- End of Profile Picture Upload -->
   
       <!-- Display Update Password Form if the user clicked the button -->
       <div v-if="showUpdatePasswordForm">
@@ -67,6 +85,11 @@
   const message = ref('');
   const error = ref('');
   const showUpdatePasswordForm = ref(false); // Toggle for showing the update password form
+
+  // Profile picture logic
+const profilePicture = ref(null);
+const uploadMessage = ref('');
+const uploadError = ref('');
   
   // Fetch user info
   const fetchUserInfo = () => {
@@ -75,19 +98,24 @@
       axios.post('http://localhost:8000/api/admin/getAdmin', { token })
         .then(res => {
           if (res.data.status) {
-            user.value.name = res.data.admin.name;
-            user.value.email = res.data.admin.email;
-          } else {
-            console.error('Failed to fetch user info');
+          user.value.name = res.data.admin.name;
+          user.value.email = res.data.admin.email;
+
+          // Add this line to check for and set the profile picture URL
+          if (res.data.admin.profile_picture) {
+            user.value.profile_picture_url = `http://localhost:8000/storage/profile_pictures/${res.data.admin.profile_picture}`;
           }
-        })
-        .catch(error => {
-          console.error('Error fetching user info:', error);
-        });
-    } else {
-      // If there's no token, redirect to login page
-      router.push('/admin/login');
-    }
+        } else {
+          console.error('Failed to fetch user info');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user info:', error);
+      });
+  } else {
+    // If there's no token, redirect to login page
+    router.push('/admin/login');
+  }
   };
   
   // Call fetchUserInfo when the component is mounted
@@ -146,6 +174,42 @@
       message.value = '';
     }
   };
+
+  // Profile Picture Upload Handler
+const handleFileChange = (event) => {
+  profilePicture.value = event.target.files[0]; // Store the selected file
+};
+const uploadProfilePicture = async () => {
+  if (!profilePicture.value) {
+    uploadError.value = 'No file selected!';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('profile_picture', profilePicture.value);
+  try {
+    const response = await axios.post('http://localhost:8000/api/admin/uploadProfilePic', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      withCredentials: true,
+    });
+
+    if (response.status === 200) {
+      uploadMessage.value = 'Profile picture uploaded successfully!';
+      uploadError.value = '';
+      fetchUserInfo();
+      user.value.profile_picture_url = response.data.profile_picture_url; // Update the profile picture URL
+    } else {
+      uploadError.value = 'Error uploading profile picture!';
+    }
+  } catch (error) {
+    uploadError.value = 'An error occurred while uploading the picture.';
+    uploadMessage.value = '';
+    console.error('Upload Error:', error);
+  }
+};
+
   </script>
   
   <style scoped>

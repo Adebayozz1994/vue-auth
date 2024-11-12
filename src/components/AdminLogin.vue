@@ -38,12 +38,16 @@ import { url } from '@/data';
   
     axios.post(`${url}admin/login`, loginDetails)
       .then(res => {
+        const {admin } = res.data;
         if (res.data.status) {
           localStorage.setItem('token', res.data.token);
           localStorage.setItem('role', res.data.role);
+          localStorage.setItem('adminDetails', JSON.stringify(admin));
   
           console.log('Token:', res.data.token);
           console.log('Role:', res.data.role);
+          console.log('Admin Details:', admin);
+          
   
           router.push('/admin/dashboard');
         } else {
