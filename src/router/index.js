@@ -12,6 +12,8 @@ import AdminDashboard from "@/components/AdminDashboard.vue";
 import AdminResetPassword from "@/components/AdminResetPassword.vue";
 import AdminPasswordLink from "@/components/AdminPasswordLink.vue";
 import AdminPasswordUpdate from "@/components/AdminPasswordUpdate.vue";
+import UserNews from "@/components/UserNews.vue";
+import AdminNews from "@/components/AdminNews.vue";
 
 
 
@@ -23,6 +25,8 @@ const routes = [
     {path: "/reset-password/:token", component: ResetPassword},
     {path: "/passwordupdate", component: PasswordUpdate},
     {path: "/signup", component: RegisterPage},
+    {path: "/news", component: UserNews},
+
 
 
 
@@ -33,6 +37,8 @@ const routes = [
     {path: "/admin/passwordupdate", component: AdminPasswordUpdate},
     {path: "/admin/reset-password/:token", component: AdminResetPassword},
     {path: "/admin/passwordlink", component: AdminPasswordLink},
+    {path: "/admin/News", component: AdminNews},
+
 
 
 
