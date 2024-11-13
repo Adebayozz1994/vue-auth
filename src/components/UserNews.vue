@@ -1,7 +1,7 @@
 <template>
     <div>
         <h1>News Feed</h1>
-        <div v-for="news in newsFeed.value" :key="news.id" class="news-post">
+        <div v-for="news in newsFeed" :key="news.id" class="news-post">
             <h2>{{ news.title }}</h2>
             <p>{{ news.content }}</p>
             <p><strong>Author:</strong> {{ news.author }}</p>
@@ -15,7 +15,7 @@
                 <div v-for="comment in news.comments" :key="comment.id" class="comment">
                     <p>{{ comment.comment }}</p>
                 </div>
-                <input v-model="commentText.value" placeholder="Add a comment" />
+                <input v-model="commentText" placeholder="Add a comment" />
                 <button @click="addComment(news.id)">Comment</button>
             </div>
         </div>
@@ -33,11 +33,16 @@ const userId = ref(1); // replace with actual user ID, or fetch dynamically if n
 
 // Fetch news from API
 const fetchNews = async () => {
-    const response = await axios.get('http://localhost:8000/api/news');
-    newsFeed.value = response.data.map(news => ({
-        ...news,
-        user_liked: news.likes.some(like => like.user_id === userId.value)
-    }));
+    try {
+        const response = await axios.get('http://localhost:8000/api/news');
+        console.log(response.data);  // Check what data is being returned
+        newsFeed.value = response.data.map(news => ({
+            ...news,
+            user_liked: news.likes.some(like => like.user_id === userId.value)
+        }));
+    } catch (error) {
+        console.error('Error fetching news:', error);
+    }
 };
 
 // Toggle like status for a news post
