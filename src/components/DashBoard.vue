@@ -1,105 +1,138 @@
 <template>
-  <div>
-    <h1>Dashboard</h1>
-    <div v-if="user">
-      <p>Name: {{ user.name }}</p>
-      <p>Email: {{ user.email }}</p>
-      <div v-if="user && user.profile_picture_url">
-        <img :src="user.profile_picture_url" alt="Profile Picture" width="150" height="150" />
+  <div class="min-h-screen bg-gray-100 py-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+      <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Dashboard</h1>
+
+      <div v-if="user" class="space-y-6">
+        <div class="text-center">
+          <p class="text-lg font-medium text-gray-700">Name: {{ user.name }}</p>
+          <p class="text-gray-500">Email: {{ user.email }}</p>
+
+          <div v-if="user.profile_picture_url" class="mt-4">
+            <img
+              :src="user.profile_picture_url"
+              alt="Profile Picture"
+              class="w-36 h-36 rounded-full mx-auto border-2 border-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div class="text-center">
+          <button
+            @click="logout"
+            class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg"
+          >
+            Logout
+          </button>
+        </div>
+
+        <!-- Profile Picture Upload Section -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Upload Profile Picture</h2>
+          <form @submit.prevent="uploadProfilePicture" class="space-y-4">
+            <input
+              type="file"
+              @change="handleFileChange"
+              accept="image/*"
+              class="block w-full text-sm text-gray-500 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <button
+              type="submit"
+              :disabled="!profilePicture"
+              class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg disabled:bg-gray-400"
+            >
+              Upload Picture
+            </button>
+          </form>
+          <div v-if="uploadMessage" class="text-green-500 mt-2">{{ uploadMessage }}</div>
+          <div v-if="uploadError" class="text-red-500 mt-2">{{ uploadError }}</div>
+        </div>
+        <!-- End of Profile Picture Upload -->
+
+        <!-- Password Update Form -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800">Update Password</h2>
+          <form @submit.prevent="updatePassword" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Current Password</label>
+              <input
+                type="password"
+                v-model="current_password"
+                required
+                class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">New Password</label>
+              <input
+                type="password"
+                v-model="password"
+                required
+                class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+              <input
+                type="password"
+                v-model="password_confirmation"
+                required
+                class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <button
+              type="submit"
+              class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg"
+            >
+              Update Password
+            </button>
+          </form>
+          <div v-if="message" class="text-green-500 mt-2">{{ message }}</div>
+          <div v-if="error" class="text-red-500 mt-2">{{ error }}</div>
+        </div>
+        <!-- End of Password Update Form -->
       </div>
 
-      <button @click="logout">Logout</button> <!-- Logout button -->
-
-
-       <!-- Profile Picture Upload Section -->
-       <div>
-        <h2>Upload Profile Picture</h2>
-        <form @submit.prevent="uploadProfilePicture">
-          <div>
-            <input type="file" @change="handleFileChange" accept="image/*" />
-          </div>
-          <button type="submit" :disabled="!profilePicture">Upload Picture</button>
-        </form>
-        <div v-if="uploadMessage" class="message">{{ uploadMessage }}</div>
-        <div v-if="uploadError" class="error">{{ uploadError }}</div>
+      <div v-else class="text-center">
+        <p class="text-gray-500">Loading user information...</p>
       </div>
-      <!-- End of Profile Picture Upload -->
-
-
-
-      <!-- Password Update Form -->
-      <div>
-        <h2>Update Password</h2>
-        <form @submit.prevent="updatePassword">
-          <div>
-            <label>Current Password</label>
-            <input type="password" v-model="current_password" required />
-          </div>
-          <div>
-            <label>New Password</label>
-            <input type="password" v-model="password" required />
-          </div>
-          <div>
-            <label>Confirm New Password</label>
-            <input type="password" v-model="password_confirmation" required />
-          </div>
-          <button type="submit">Update Password</button>
-        </form>
-        <div v-if="message" class="message">{{ message }}</div>
-        <div v-if="error" class="error">{{ error }}</div>
-      </div>
-      <!-- End of Password Update Form -->
-
-    </div>
-    <div v-else>
-      <p>Loading user information...</p>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { url } from '../data';
-import { useRouter } from 'vue-router'; // Import the useRouter function
+import { useRouter } from 'vue-router';
 
-// Define user info and router
 const user = ref(null);
 const router = useRouter();
 
-
-// Profile picture logic
 const profilePicture = ref(null);
 const uploadMessage = ref('');
 const uploadError = ref('');
 
-// Define password update state variables
 const current_password = ref('');
 const password = ref('');
 const password_confirmation = ref('');
 const message = ref('');
 const error = ref('');
 
-// Fetch user info on mount
 const fetchUserInfo = async () => {
   try {
     const response = await axios.get(`${url}user`);
-    user.value = response.data.user; // Assuming the API returns user data in this format
-    
-    // Check if the user has a profile picture and construct the URL
+    user.value = response.data.user;
+
     if (user.value.profile_picture) {
-      // Make sure to use the right public path to display the image
       user.value.profile_picture_url = `http://localhost:8000/storage/profile_picture/${user.value.profile_picture}`;
     }
-    
-    console.log(response.data.user);
   } catch (error) {
     console.error('Error fetching user information:', error);
   }
 };
 
-
-// Logout function
 const logout = async () => {
   try {
     await axios.post(`${url}logout`);
@@ -110,44 +143,38 @@ const logout = async () => {
   }
 };
 
-// Password update function
 const updatePassword = async () => {
   try {
-    const response = await axios.put(`${url}password`, {
-      current_password: current_password.value,
-      password: password.value,
-      password_confirmation: password_confirmation.value,
-    }, { withCredentials: true });
+    const response = await axios.put(
+      `${url}password`,
+      {
+        current_password: current_password.value,
+        password: password.value,
+        password_confirmation: password_confirmation.value,
+      },
+      { withCredentials: true }
+    );
 
-    // Check for a success status in the response and clear any error state
     if (response.status === 200) {
       message.value = 'Password updated successfully!';
       error.value = '';
     } else {
-      // Handle unexpected non-200 responses without throwing
       error.value = 'Unexpected response from server.';
-      console.error(response);
     }
   } catch (errorResponse) {
-    // Refine the error handling to extract error details if available
     if (errorResponse.response && errorResponse.response.data.errors) {
       error.value = Object.values(errorResponse.response.data.errors).flat()[0];
     } else {
       error.value = 'An error occurred during the update.';
     }
     message.value = '';
-    console.error('Error:', errorResponse);
   }
 };
 
-
-
-// Profile Picture Upload Handler
 const handleFileChange = (event) => {
-  profilePicture.value = event.target.files[0]; // Store the selected file
+  profilePicture.value = event.target.files[0];
 };
 
-// Profile Picture Upload Function
 const uploadProfilePicture = async () => {
   if (!profilePicture.value) {
     uploadError.value = 'No file selected!';
@@ -159,39 +186,25 @@ const uploadProfilePicture = async () => {
 
   try {
     const response = await axios.post(`${url}uploadProfilePic`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
       withCredentials: true,
     });
 
     if (response.status === 200) {
       uploadMessage.value = 'Profile picture uploaded successfully!';
       uploadError.value = '';
-      fetchUserInfo(); // Refresh user info to reflect updated profile picture
+      fetchUserInfo();
     } else {
       uploadError.value = 'Error uploading profile picture!';
     }
   } catch (error) {
+    console.log(error);
     uploadError.value = 'An error occurred while uploading the picture.';
     uploadMessage.value = '';
-    console.error('Upload Error:', error);
   }
 };
 
-
-// Fetch user information when the component is mounted
 onMounted(() => {
   fetchUserInfo();
 });
 </script>
-
-<style>
-/* Add any styles you want for your dashboard */
-.message {
-  color: green;
-}
-.error {
-  color: red;
-}
-</style>
